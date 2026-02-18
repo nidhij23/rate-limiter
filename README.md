@@ -68,7 +68,7 @@ request arrives but if the number of tokens have exhausted then the requests are
 ## High Level Design 
 
 [//]: # (TODO: add uml diagram here)
-![Diagram Label](hld-1.png)
+![Diagram Label](docs/hld-1.png)
 
 ## Sequence Diagram
 ```mermaid
@@ -336,12 +336,18 @@ POST /v1/ratelimit/check
 ```json
 {
   "descriptors": [
-    { "key": "user_id", "value": "123" },
-    { "key": "route", "value": "/v1/orders" },
-    { "key": "method", "value": "POST" }
+    {
+      "key": "user_id",
+      "value": "123"
+    },
+    {
+      "key": "ip_address",
+      "value": "1.23.22.23"
+    }
   ],
   "hits": 1,
-  "timestamp": 1712345678
+  "timestamp": 1712345678,
+  "rule_name": "login_limit"
 }
 
 ```
@@ -377,3 +383,32 @@ X-RateLimit-Reset: 1712345700
 Retry-After: 23
 
 ```
+
+### How does a rule look like in config?
+Multiple identifiers form an AND relation for determining the rate limiting
+```json
+{
+    "_id": "login_rule",
+    "enabled": true,
+    "algorithm": "fixed_window",
+    "window_seconds": 60,
+    "identifiers": [
+        {
+            "type": "userId",
+            "limit": 5
+        },
+        {
+            "type": "ip",
+            "limit": 50
+        }
+    ],
+    "action": {
+        "on_limit": "BLOCK",
+        "status_code": 429,
+        "message": "Too many login attempts"
+    }
+}
+```
+
+### redis key
+rl:login_limit:method=POST:route=/v1/orders:user_id=123

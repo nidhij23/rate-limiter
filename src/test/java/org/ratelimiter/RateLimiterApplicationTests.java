@@ -1,4 +1,4 @@
-package org.example.ratelimiter;
+package org.ratelimiter;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
